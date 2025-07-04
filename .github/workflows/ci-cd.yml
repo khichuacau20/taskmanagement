@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: taskuser
+          POSTGRES_PASSWORD: taskpass
+          POSTGRES_DB: taskdb
+        ports: [5432:5432]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgres://taskuser:taskpass@localhost:5432/taskdb
+      JWT_SECRET: test_secret
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm run test
+      - name: Install frontend dependencies
+        run: |
+          cd task-manager-frontend
+          npm ci
+      - name: Run frontend tests
+        run: |
+          cd task-manager-frontend
+          npm run test -- --watchAll=false
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build backend
+        run: |
+          cd backend
+          npm ci
+          npm run build
+      - name: Build frontend
+        run: |
+          cd task-manager-frontend
+          npm ci
+          npm run build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      # Add your cloud deployment steps here, e.g. Docker, SSH, or cloud CLI
+      - name: Deploy to cloud (placeholder)
+        run: echo "Deploying to cloud..."
