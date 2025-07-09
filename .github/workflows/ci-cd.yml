@@ -13,15 +13,15 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: taskuser
-          POSTGRES_PASSWORD: taskpass
-          POSTGRES_DB: taskdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: postgres
         ports: [5432:5432]
         options: >-
           --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     env:
-      DATABASE_URL: postgres://taskuser:taskpass@localhost:5432/taskdb
-      JWT_SECRET: test_secret
+      DATABASE_URL: postgresql://postgres:admin@localhost:5432/postgres
+      JWT_SECRET: admin
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +72,20 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      # Add your cloud deployment steps here, e.g. Docker, SSH, or cloud CLI
-      - name: Deploy to cloud (placeholder)
-        run: echo "Deploying to cloud..."
+      # Example: DockerHub deployment (uncomment and set secrets to use)
+      # - name: Log in to DockerHub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # - name: Build and push backend image
+      #   run: |
+      #     docker build -t your-dockerhub-username/taskmanager-backend ./backend
+      #     docker push your-dockerhub-username/taskmanager-backend
+      # - name: Build and push frontend image
+      #   run: |
+      #     docker build -t your-dockerhub-username/taskmanager-frontend ./task-manager-frontend
+      #     docker push your-dockerhub-username/taskmanager-frontend
+      # Example: Vercel/Netlify/Render/Heroku deployment can be added here
+      - name: Deployment placeholder
+        run: echo "Add deployment steps for your cloud platform here."
